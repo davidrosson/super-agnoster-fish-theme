@@ -5,7 +5,7 @@
 # # README
 #
 # In order for this theme to render correctly, you will need a
-# [Powerline-patched font](https://gist.github.com/1595572).
+# [Powerline-patched font](https://gist.github.com/1595572)
 
 ## Set these options in your config.fish (if you want to :])
 # set -g theme_display_user yes
@@ -21,26 +21,26 @@ set -q scm_prompt_blacklist; or set scm_prompt_blacklist
 
 
 # ===========================
-# Color setting
+# Color settings
 
-# You can set these variables in config.fish like:
+# You can set these variables in init.fish (or config.fish) like:
 # set -g color_dir_bg red
-# If not set, default color from agnoster will be used.
+# If not set, the default colors below will be used
 # ===========================
 
 set -q color_virtual_env_bg; or set color_virtual_env_bg white
 set -q color_virtual_env_str; or set color_virtual_env_str black
 set -q color_user_bg; or set color_user_bg black
 set -q color_user_str; or set color_user_str yellow
-set -q color_dir_bg; or set color_dir_bg blue
+set -q color_dir_bg; or set color_dir_bg 0087d7
 set -q color_dir_str; or set color_dir_str black
 set -q color_hg_changed_bg; or set color_hg_changed_bg yellow
 set -q color_hg_changed_str; or set color_hg_changed_str black
 set -q color_hg_bg; or set color_hg_bg green
 set -q color_hg_str; or set color_hg_str black
-set -q color_git_dirty_bg; or set color_git_dirty_bg yellow
+set -q color_git_dirty_bg; or set color_git_dirty_bg ffff5f
 set -q color_git_dirty_str; or set color_git_dirty_str black
-set -q color_git_bg; or set color_git_bg green
+set -q color_git_bg; or set color_git_bg 87d75f
 set -q color_git_str; or set color_git_str black
 set -q color_svn_bg; or set color_svn_bg green
 set -q color_svn_str; or set color_svn_str black
@@ -54,26 +54,43 @@ set -q color_status_jobs_str; or set color_status_jobs_str cyan
 
 
 # ===========================
-# Helper methods
+# Git Prompt settings
 # ===========================
 
-set -g __fish_git_prompt_showdirtystate 'yes'
-# set -g __fish_git_prompt_char_dirtystate '±'
-# set -g __fish_git_prompt_char_cleanstate ''
+set -g __fish_git_prompt_show_informative_status 1
+# set -g __fish_git_prompt_showdirtystate 'yes'
+
+set -g __fish_git_prompt_char_stateseparator '|'
+set -g __fish_git_prompt_char_cleanstate '✔'
+set -g __fish_git_prompt_char_dirtystate '⚒'
+set -g __fish_git_prompt_char_stagedstate '±'
+set -g __fish_git_prompt_char_invalidstate '✖'
+set -g __fish_git_prompt_char_untrackedfiles '?'
+set -g __fish_git_prompt_char_upstream_prefix ':'
+set -g __fish_git_prompt_char_upstream_ahead '↑'
+set -g __fish_git_prompt_char_upstream_behind '↓'
+set -g __fish_git_prompt_char_upstream_diverged '↑↓'
+
+
+
+# ===========================
+# Helper methods
+# ===========================
 
 function parse_git_dirty
   set -l submodule_syntax
   set submodule_syntax "--ignore-submodules=dirty"
-  set git_dirty (command git status --porcelain $submodule_syntax  2> /dev/null)
-  if [ -n "$git_dirty" ]
-    if [ $__fish_git_prompt_showdirtystate = "yes" ]
-      echo -n "$__fish_git_prompt_char_dirtystate"
-    end
-  else
-    if [ $__fish_git_prompt_showdirtystate = "yes" ]
-      echo -n "$__fish_git_prompt_char_cleanstate"
-    end
-  end
+  set git_dirty (command git status --porcelain $submodule_syntax 2> /dev/null)
+  # if [ -n "$git_dirty" ]
+  #   if [ $__fish_git_prompt_showdirtystate = "yes" ]
+  #     echo -n "$__fish_git_prompt_char_dirtystate"
+  #   end
+  # else
+  #   if [ $__fish_git_prompt_showdirtystate = "yes" ]
+  #     echo -n "$__fish_git_prompt_char_cleanstate"
+  #   end
+  # end
+  echo -n $git_dirty
 end
 
 
@@ -203,28 +220,53 @@ end
 # end
 
 
+# function prompt_git -d "Display the current git state"
+#   set -l ref
+#   set -l dirty
+#
+#   if command git rev-parse --is-inside-work-tree >/dev/null 2>&1
+#     set dirty (parse_git_dirty)
+#     set ref (command git symbolic-ref HEAD 2> /dev/null)
+#
+#     set -l info_prompt (__fish_git_prompt) # NEW
+#
+#     if [ $status -gt 0 ]
+#       set -l branch (command git show-ref --head -s --abbrev | head -n1 2> /dev/null)
+#       set ref "➦ $branch "
+#     end
+#
+#     set branch_symbol \uE0A0
+#     set -l branch (echo $ref | sed  "s-refs/heads/-$branch_symbol -")
+#
+#     if [ "$dirty" != "" ]
+#       prompt_segment $color_git_dirty_bg $color_git_dirty_str "$branch $dirty"
+#     else
+#       prompt_segment $color_git_bg $color_git_str "$branch $dirty"
+#     end
+#   end
+# end
+
+
 function prompt_git -d "Display the current git state"
-  set -l ref
-  set -l dirty
-
   if command git rev-parse --is-inside-work-tree >/dev/null 2>&1
-    set dirty (parse_git_dirty)
+    set -l branch
+    set -l info_prompt (__fish_git_prompt)
     set ref (command git symbolic-ref HEAD 2> /dev/null)
-
-    set -l info_prompt (__fish_git_prompt) # NEW
-
     if [ $status -gt 0 ]
-      set -l branch (command git show-ref --head -s --abbrev |head -n1 2> /dev/null)
-      set ref "➦ $branch "
-    end
-
-    set branch_symbol \uE0A0
-    set -l branch (echo $ref | sed  "s-refs/heads/-$branch_symbol -")
-
-    if [ "$dirty" != "" ]
-      prompt_segment $color_git_dirty_bg $color_git_dirty_str "$branch $dirty"
+      set -l symbolic (command git show-ref --head -s --abbrev | head -n1 2> /dev/null)
+      set -l tag (command git tag | tail -n1 2> /dev/null)
+      set branch (echo $info_prompt | sed -E "s: \(\(v[0-9]+\):➦ $symbolic:")
+      set branch (echo $branch | sed -E "s:\($tag\):$symbolic:")
     else
-      prompt_segment $color_git_bg $color_git_str "$branch $dirty"
+      set -l branch_symbol \uE0A0
+      set branch (echo $info_prompt | sed "s: (:$branch_symbol :")
+    end
+    set branch (echo $branch | sed "s:)::")
+    set -l dirty (parse_git_dirty)
+    if [ -n "$dirty" ]
+      prompt_segment $color_git_dirty_bg $color_git_dirty_str "$branch"
+    else
+      prompt_segment $color_git_bg $color_git_str "$branch"
     end
   end
 end
