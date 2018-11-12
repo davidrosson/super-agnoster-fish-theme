@@ -15,8 +15,8 @@ function fish_right_prompt
 
   date "+%H:%M:%S"
 
-  if test $fish_show_command_line_fish_icon = true
-    echo " "🐟" "
+  if test -n "$fish_command_line_icon"
+    echo " $fish_command_line_icon "
   end
 
   set_color normal
