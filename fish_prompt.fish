@@ -253,10 +253,10 @@ function prompt_git -d "Display the current git state"
     set -l info_prompt (__fish_git_prompt)
     set ref (command git symbolic-ref HEAD 2> /dev/null)
     if [ $status -gt 0 ]
-      set -l symbolic (command git show-ref --head -s --abbrev | head -n1 2> /dev/null)
+      set -l githash (command git show-ref --head -s --abbrev | head -n1 2> /dev/null)
       set -l tag (command git tag | tail -n1 2> /dev/null)
-      set branch (echo $info_prompt | sed -E "s: \(\(v[0-9]+\):➦ $symbolic:")
-      set branch (echo $branch | sed -E "s:\($tag\):$symbolic:")
+      set branch (echo $info_prompt | sed -E "s: \(\($tag\):➦ $tag|$githash:")
+      set branch (echo $branch | sed -E "s: \(\([0-9a-e]+…\):➦ $githash:")
     else
       set -l branch_symbol \uE0A0
       set branch (echo $info_prompt | sed "s: (:$branch_symbol :")
