@@ -58,7 +58,6 @@ set -q color_status_jobs_str; or set color_status_jobs_str cyan
 # ===========================
 
 set -g __fish_git_prompt_show_informative_status 1
-# set -g __fish_git_prompt_showdirtystate 'yes'
 
 set -g __fish_git_prompt_char_stateseparator '|'
 set -g __fish_git_prompt_char_cleanstate '✔'
@@ -81,15 +80,6 @@ function parse_git_dirty
   set -l submodule_syntax
   set submodule_syntax "--ignore-submodules=dirty"
   set git_dirty (command git status --porcelain $submodule_syntax 2> /dev/null)
-  # if [ -n "$git_dirty" ]
-  #   if [ $__fish_git_prompt_showdirtystate = "yes" ]
-  #     echo -n "$__fish_git_prompt_char_dirtystate"
-  #   end
-  # else
-  #   if [ $__fish_git_prompt_showdirtystate = "yes" ]
-  #     echo -n "$__fish_git_prompt_char_cleanstate"
-  #   end
-  # end
   echo -n $git_dirty
 end
 
@@ -253,8 +243,8 @@ function prompt_git -d "Display the current git state"
     set -l info_prompt (__fish_git_prompt)
     set ref (command git symbolic-ref HEAD 2> /dev/null)
     if [ $status -gt 0 ]
-      set -l githash (command git show-ref --head -s --abbrev | head -n1 2> /dev/null)
       set -l tag (command git tag | tail -n1 2> /dev/null)
+      set -l githash (command git show-ref --head -s --abbrev | head -n1 2> /dev/null)
       set branch (echo $info_prompt | sed -E "s: \(\($tag\):➦ $tag|$githash:")
       set branch (echo $branch | sed -E "s: \(\([0-9a-e]+…\):➦ $githash:")
     else
